@@ -60,21 +60,25 @@ export const updateProduct = async (req, res) => {
   }
 };
 
-// Delete a product
-export const deleteProduct = async (req, res) => {
+// Delete products
+export const deleteProducts = async (req, res) => {
   if (req.query.key !== process.env.ADMIN_KEY)
     return res.status(401).send("Unauthorized");
 
+  const { ids } = req.body;
+
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return res.status(400).json({ error: "No product IDs provided" });
+  }
+
   try {
-    const { id } = req.params;
-    const deletedProduct = await Product.findByIdAndDelete(id);
+    const result = await Product.deleteMany({ _id: { $in: ids } });
 
-    if (!deletedProduct) {
-      return res.status(404).json({ error: "Product not found" });
-    }
-
-    res.json({ message: "Product deleted successfully" });
+    res.json({
+      message: `${result.deletedCount} product(s) deleted successfully`
+    });
   } catch (err) {
     res.status(500).json({ error: "Server error" });
   }
 };
+
