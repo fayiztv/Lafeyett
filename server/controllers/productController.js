@@ -23,6 +23,21 @@ export const createProduct = async (req, res) => {
   }
 };
 
+// Get single product by ID
+export const getProductDetails = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const product = await Product.findById(id);
+
+    if (!product) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+    res.json(product);
+  } catch (err) {
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
 // Update an existing product
 export const updateProduct = async (req, res) => {
   if (req.query.key !== process.env.ADMIN_KEY)
@@ -30,11 +45,10 @@ export const updateProduct = async (req, res) => {
 
   try {
     const { id } = req.params;
-    const updatedProduct = await Product.findByIdAndUpdate(
-      id,
-      req.body,
-      { new: true, runValidators: true }
-    );
+    const updatedProduct = await Product.findByIdAndUpdate(id, req.body, {
+      new: true,
+      runValidators: true,
+    });
 
     if (!updatedProduct) {
       return res.status(404).json({ error: "Product not found" });
