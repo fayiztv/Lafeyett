@@ -11,9 +11,6 @@ export const getAllProducts = async (req, res) => {
 
 //create a product
 export const createProduct = async (req, res) => {
-  if (req.query.key !== process.env.ADMIN_KEY)
-    return res.status(401).send("Unauthorized");
-
   try {
     const newProduct = new Product(req.body);
     await newProduct.save();
@@ -40,9 +37,6 @@ export const getProductDetails = async (req, res) => {
 
 // Update an existing product
 export const updateProduct = async (req, res) => {
-  if (req.query.key !== process.env.ADMIN_KEY)
-    return res.status(401).send("Unauthorized");
-
   try {
     const { id } = req.params;
     const updatedProduct = await Product.findByIdAndUpdate(id, req.body, {
@@ -62,9 +56,6 @@ export const updateProduct = async (req, res) => {
 
 // Delete products
 export const deleteProducts = async (req, res) => {
-  if (req.query.key !== process.env.ADMIN_KEY)
-    return res.status(401).send("Unauthorized");
-
   const { ids } = req.body;
 
   if (!Array.isArray(ids) || ids.length === 0) {
@@ -75,10 +66,9 @@ export const deleteProducts = async (req, res) => {
     const result = await Product.deleteMany({ _id: { $in: ids } });
 
     res.json({
-      message: `${result.deletedCount} product(s) deleted successfully`
+      message: `${result.deletedCount} product(s) deleted successfully`,
     });
   } catch (err) {
     res.status(500).json({ error: "Server error" });
   }
 };
-
