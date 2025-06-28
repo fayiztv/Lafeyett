@@ -23,3 +23,68 @@ export const adminLogin = async (req, res) => {
 
   res.json({ token });
 };
+
+// Forgot password - send otp
+export const forgotPassword = async (req, res) => {
+  const { phone } = req.body;
+
+  const admin = await Admin.findOne({ phone });
+  if (!admin) return res.status(404).json({ error: "Admin not found" });
+
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  console.log("this is the otp", otp);
+  const expires = new Date(Date.now() + 10 * 60 * 1000); // 10 min
+
+  admin.otp = otp;
+  admin.otpExpires = expires;
+  await admin.save();
+
+  await sendSMS(admin.phone, `Your OTP is ${otp}`);
+
+  res.json({ message: "OTP sent to registered number" });
+};
+
+// Verify otp
+export const verifyOtp = async (req, res) => {
+  const { phone, otp } = req.body;
+
+  const admin = await Admin.findOne({ phone });
+  if (!admin) return res.status(404).json({ error: "Admin not found" });
+
+  if (!admin.otp || admin.otp !== otp || admin.otpExpires < new Date()) {
+    return res.status(400).json({ error: "Invalid or expired OTP" });
+  }
+
+  res.json({ message: "OTP verified" });
+};
+
+// Rest password
+export const resetPassword = async (req, res) => {
+  const { phone, newPassword, otp } = req.body;
+
+  const admin = await Admin.findOne({ phone });
+  if (!admin) return res.status(404).json({ error: "Admin not found" });
+
+  if (!admin.otp || admin.otp !== otp || admin.otpExpires < new Date()) {
+    return res.status(400).json({ error: "Invalid or expired OTP" });
+  }
+
+  // Hash new password
+  const hashed = await bcrypt.hash(newPassword, 10);
+  admin.password = hashed;
+
+  // Invalidate OTP immediately
+  admin.otp = undefined;
+  admin.otpExpires = undefined;
+
+  await admin.save();
+
+  // Issue new JWT (auto-login)
+  const token = jwt.sign(
+    { id: admin._id, username: admin.username, role: "admin" },
+    JWT_SECRET,
+    { expiresIn: JWT_EXPIRES_IN }
+  );
+
+  res.json({ message: "Password updated successfully", token });
+};
