@@ -31,8 +31,7 @@ export const forgotPassword = async (req, res) => {
   const admin = await Admin.findOne();
   if (!admin) return res.status(404).json({ error: "Admin not configured" });
 
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
-  console.log("this is the otp", otp);
+  const otp = Math.floor(1000 + Math.random() * 9000).toString();
   const expires = new Date(Date.now() + 10 * 60 * 1000); // 10 min
 
   admin.otp = otp;
