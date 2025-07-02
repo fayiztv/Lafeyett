@@ -13,7 +13,7 @@ const router = express.Router();
 router.get("/", getAllProducts);
 router.post("/", adminAuth, createProduct);
 router.get("/:id", getProductDetails);
-router.put("/:id", adminAuth, updateProduct);
+router.post("/:id", adminAuth, updateProduct);
 router.delete("/", adminAuth, deleteProducts);
 
 export default router;

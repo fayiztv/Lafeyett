@@ -3,7 +3,7 @@ import Product from "../models/product.js";
 export const getAllProducts = async (req, res) => {
   try {
     const products = await Product.find();
-    res.json(products);
+    res.json({message: "Products listed", data: products});
   } catch (err) {
     res.status(500).json({ error: "Server error" });
   }
@@ -14,7 +14,7 @@ export const createProduct = async (req, res) => {
   try {
     const newProduct = new Product(req.body);
     await newProduct.save();
-    res.status(201).json(newProduct);
+    res.status(201).json({message: "Product created", data: newProduct});
   } catch (err) {
     res.status(400).json({ error: "Invalid data" });
   }
@@ -29,7 +29,7 @@ export const getProductDetails = async (req, res) => {
     if (!product) {
       return res.status(404).json({ error: "Product not found" });
     }
-    res.json(product);
+    res.json({message: "Product details fetched", data: product});
   } catch (err) {
     res.status(500).json({ error: "Server error" });
   }
@@ -48,7 +48,7 @@ export const updateProduct = async (req, res) => {
       return res.status(404).json({ error: "Product not found" });
     }
 
-    res.json(updatedProduct);
+    res.json({message: "Product updated", data: updatedProduct});
   } catch (err) {
     res.status(400).json({ error: "Invalid data" });
   }
