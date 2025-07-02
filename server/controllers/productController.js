@@ -72,3 +72,45 @@ export const deleteProducts = async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 };
+
+// Increment likedCount
+export const incrementLikedCount = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const product = await Product.findByIdAndUpdate(
+      id,
+      { $inc: { likedCount: 1 } },
+      { new: true }
+    );
+
+    if (!product) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+
+    res.json({ message: "Liked count incremented", data: product });
+  } catch (err) {
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+// Decrement likedCount
+export const decrementLikedCount = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const product = await Product.findById(id);
+    if (!product) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+
+    if (product.likedCount > 0) {
+      product.likedCount -= 1;
+      await product.save();
+    }
+
+    res.json({ message: "Liked count decremented", data: product });
+  } catch (err) {
+    res.status(500).json({ error: "Server error" });
+  }
+};
