@@ -26,7 +26,7 @@ export const adminLogin = async (req, res) => {
 };
 
 // Forgot password - send otp
-export const forgotPassword = async (req, res) => {
+export const sendOTP = async (req, res) => {
     
   const admin = await Admin.findOne();
   if (!admin) return res.status(404).json({ error: "Admin not configured" });
@@ -87,3 +87,40 @@ export const resetPassword = async (req, res) => {
 
   res.json({ message: "Password updated successfully", token });
 };
+
+//Update admin profile
+export const updateAdminProfile = async (req, res) => {
+    const { username, password, otp } = req.body;
+  
+    const admin = await Admin.findOne();
+    if (!admin) return res.status(404).json({ error: "Admin not configured" });
+  
+    // If password is being updated, OTP is required
+    if (password) {
+      if (!otp) {
+        return res.status(400).json({ error: "OTP is required to change password" });
+      }
+  
+      if (!admin.otp || admin.otp !== otp || admin.otpExpires < new Date()) {
+        return res.status(400).json({ error: "Invalid or expired OTP" });
+      }
+  
+      // Hash and set new password
+      const hashed = await bcrypt.hash(password, 10);
+      admin.password = hashed;
+  
+      // Invalidate OTP immediately
+      admin.otp = undefined;
+      admin.otpExpires = undefined;
+    }
+  
+    // Username can always be updated (even with password)
+    if (username) {
+      admin.username = username;
+    }
+  
+    await admin.save();
+  
+    res.json({ message: "Admin profile updated successfully" });
+  };
+  
